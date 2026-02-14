@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игральный кубик | Случайное число</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(145deg, #1e2b3a 0%, #0f1a24 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 16px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 32px 24px 48px 24px;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5), inset 0 2px 3px rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.2s;
+        }
+        h1 {
+            text-align: center;
+            font-weight: 500;
+            font-size: 2.4rem;
+            letter-spacing: 2px;
+            color: #f2e9d0;
+            text-shadow: 0 5px 10px #00000040, 0 0 5px #ffd78c80;
+            margin-bottom: 24px;
+            word-break: break-word;
+        }
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0 32px 0;
+            filter: drop-shadow(0 20px 20px #00000070);
+        }
+        /* Стилизация кубика — рисуем вручную через CSS */
+        .dice {
+            width: 200px;
+            height: 200px;
+            background: #fafafd;
+            border-radius: 32px;
+            box-shadow: 
+                inset 0 -8px 8px rgba(0,0,0,0.15),
+                inset 0 8px 10px rgba(255,255,255,0.9),
+                0 20px 30px rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        .dice:hover {
+            transform: scale(1.02);
+        }
+        /* Сетка для точек (как на настоящем кубике) */
+        .face {
+            width: 140px;
+            height: 140px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 10px;
+        }
+        .pip {
+            background: #1e272e;
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+            max-width: 32px;
+            max-height: 32px;
+            place-self: center;
+            box-shadow: 0 4px 4px rgba(0,0,0,0.2), inset 0 0 0 1px #ffffff40;
+            transition: background 0.1s, transform 0.1s;
+        }
+        /* точки не видны по умолчанию, будем показывать через дата-атрибут */
+        .pip {
+            opacity: 0;
+        }
+        .pip.show-pip {
+            opacity: 1;
+        }
+        /* Кнопка */
+        .roll-button {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            background: #fece6b;
+            border: none;
+            border-radius: 60px;
+            padding: 18px 48px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1b2a36;
+            letter-spacing: 1px;
+            box-shadow: 0 15px 0 #b28434, 0 10px 25px #00000060, 0 5px 15px #ffb34780;
+            cursor: pointer;
+            transition: all 0.07s ease-out;
+            border: 1px solid #ffe5b4;
+            text-transform: uppercase;
+        }
+        .roll-button:active {
+            transform: translateY(8px);
+            box-shadow: 0 7px 0 #b28434, 0 12px 25px #00000060;
+        }
+        .roll-button:focus-visible {
+            outline: 3px solid #ffd966;
+            outline-offset: 4px;
+        }
+        /* дополнительный текст результата */
+        .result-badge {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #fbeba4;
+            text-shadow: 0 3px 5px #00000050;
+            background: rgba(0,0,0,0.2);
+            padding: 12px 20px;
+            border-radius: 60px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            backdrop-filter: blur(5px);
+            border: 1px solid #ffffff30;
+            min-width: 120px;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 28px;
+            color: #bbc9d5;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎲 БРОСОК КУБИКА</h1>
+
+        <!-- Визуальный кубик -->
+        <div class="dice-container">
+            <div class="dice" id="diceElement">
+                <!-- Грань с точками (рисуются через CSS grid) -->
+                <div class="face" id="diceFace">
+                    <!-- 9 ячеек для размещения точек (позиции: верхний ряд, средний, нижний) -->
+                    <div class="pip" data-pos="0"></div> <div class="pip" data-pos="1"></div> <div class="pip" data-pos="2"></div>
+                    <div class="pip" data-pos="3"></div> <div class="pip" data-pos="4"></div> <div class="pip" data-pos="5"></div>
+                    <div class="pip" data-pos="6"></div> <div class="pip" data-pos="7"></div> <div class="pip" data-pos="8"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопка броска -->
+        <button class="roll-button" id="rollBtn" aria-label="Бросить кубик">Бросить</button>
+
+        <!-- Отображение числа (дублирует кубик, для удобства) -->
+        <div class="result-badge" id="resultDisplay">⚀ 1</div>
+        <div class="footer-note">нажми на кнопку — получи число от 1 до 6</div>
+    </div>
+
+    <script>
+        (function() {
+            // Получаем все точки (пипсы) внутри грани
+            const pips = document.querySelectorAll('.pip');
+            const resultDisplay = document.getElementById('resultDisplay');
+            const rollBtn = document.getElementById('rollBtn');
+            const diceFace = document.getElementById('diceFace'); // не обязательно, но на всякий
+
+            // Утилита: стереть все активные точки (скрыть)
+            function clearDots() {
+                pips.forEach(pip => pip.classList.remove('show-pip'));
+            }
+
+            // Функция отображения нужной грани (по числу 1-6)
+            function showDiceFace(number) {
+                // Сначала прячем все точки
+                clearDots();
+
+                // В зависимости от числа активируем соответствующие позиции
+                // Индексы pip (0..8):
+                // [0] top-left, [1] top-center, [2] top-right,
+                // [3] middle-left, [4] middle-center, [5] middle-right,
+                // [6] bottom-left, [7] bottom-center, [8] bottom-right
+
+                switch(number) {
+                    case 1:  // центр
+                        pips[4].classList.add('show-pip');
+                        break;
+                    case 2:  // левый верхний и правый нижний
+                        pips[0].classList.add('show-pip');
+                        pips[8].classList.add('show-pip');
+                        break;
+                    case 3:  // диагональ + центр
+                        pips[0].classList.add('show-pip');
+                        pips[4].classList.add('show-pip');
+                        pips[8].classList.add('show-pip');
+                        break;
+                    case 4:  // все четыре угла
+                        pips[0].classList.add('show-pip');
+                        pips[2].classList.add('show-pip');
+                        pips[6].classList.add('show-pip');
+                        pips[8].classList.add('show-pip');
+                        break;
+                    case 5:  // углы + центр
+                        pips[0].classList.add('show-pip');
+                        pips[2].classList.add('show-pip');
+                        pips[4].classList.add('show-pip');
+                        pips[6].classList.add('show-pip');
+                        pips[8].classList.add('show-pip');
+                        break;
+                    case 6:  // два вертикальных ряда (левая и правая колонки), без центра
+                        pips[0].classList.add('show-pip');
+                        pips[2].classList.add('show-pip');
+                        pips[3].classList.add('show-pip');
+                        pips[5].classList.add('show-pip');
+                        pips[6].classList.add('show-pip');
+                        pips[8].classList.add('show-pip');
+                        // можно также pips[?] добавить средние по желанию, но в классике 6 — заполнены все кроме центральной вертикали.
+                        // Убедимся, что центр (4) неактивен (уже скрыт через clear)
+                        break;
+                    default: // на всякий случай
+                        clearDots();
+                }
+            }
+
+            // Функция для генерации случайного числа от 1 до 6
+            function rollDice() {
+                return Math.floor(Math.random() * 6) + 1;
+            }
+
+            // Обновление интерфейса при броске
+            function updateDice() {
+                const number = rollDice();
+                showDiceFace(number);
+
+                // Дополнительно покажем число текстом и символом (unicode)
+                const diceSymbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+                resultDisplay.innerHTML = `${diceSymbols[number-1]} ${number}`;
+
+                // Легкая анимация (встряхнем контейнер)
+                const diceElem = document.getElementById('diceElement');
+                diceElem.style.transform = 'scale(0.95) rotate(2deg)';
+                setTimeout(() => {
+                    diceElem.style.transform = 'scale(1) rotate(0deg)';
+                }, 100);
+            }
+
+            // Начальное состояние (например, покажем 1)
+            showDiceFace(1);
+            resultDisplay.innerHTML = `⚀ 1`;
+
+            // Обработчик клика на кнопку
+            rollBtn.addEventListener('click', function() {
+                updateDice();
+                // маленькая вибрация идеи (если поддерживается)
+                if (navigator.vibrate) navigator.vibrate(30);
+            });
+
+            // Дополнительно: можно реагировать на клавишу пробел (для удобства)
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' && document.activeElement !== rollBtn) {
+                    e.preventDefault(); // чтобы страница не скроллилась
+                    updateDice();
+                    if (navigator.vibrate) navigator.vibrate(20);
+                    // визуальный эффект на кнопке
+                    rollBtn.style.transform = 'translateY(8px)';
+                    rollBtn.style.boxShadow = '0 7px 0 #b28434, 0 12px 25px #00000060';
+                    setTimeout(() => {
+                        rollBtn.style.transform = '';
+                        rollBtn.style.boxShadow = '';
+                    }, 120);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
